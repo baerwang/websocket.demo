@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+  <title>聊天室</title>
+
+  <!-- Bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- HTML5 shim 和 Respond.js 是为了让 IE8 支持 HTML5 元素和媒体查询（media queries）功能 -->
+  <!-- 警告：通过 file:// 协议（就是直接将 html 页面拖拽到浏览器中）访问页面时 Respond.js 不起作用 -->
+  <!--[if lt IE 9]>
+      <script src="https://cdn.jsdelivr.net/npm/html5shiv@3.7.3/dist/html5shiv.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/respond.js@1.4.2/dest/respond.min.js"></script>
+    <![endif]-->
+
+  <link rel="stylesheet" href="css/layout.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <h1>花里胡哨聊天室<span id="count"></span></h1>
+    <div class="row">
+      <div class="col-md-14">
+        <div class="form-group" id="login">
+          <label for="username">姓名</label>
+          <input type="text" class="form-control  input-lg" id="username" placeholder="请输入姓名">
+          <div class="alert alert-danger hide" id="name-null">名称不能为空</div>
+          <br>
+          <button class="btn btn-success pull-right" id="show-btn">Submit</button>
+        </div>
+
+      </div>
+    </div>
+    <br>
+    <div id="div-v">
+      <div class="row pre-scrollable" id="contentX">
+        <div class="col-md-12" id="content">
+          <div class="con-item" id="chatcon">
+
+          </div>
+        </div>
+      </div>
+      <br>
+      <div class="col-md-12">
+        <textarea class="form-control" rows="3" id="message"></textarea>
+        <br>
+        <button class="btn btn-success pull-right" id="send-btn">Submit</button>
+      </div>
+    </div>
+  </div>
+  <!-- jQuery (Bootstrap 的所有 JavaScript 插件都依赖 jQuery，所以必须放在前边) -->
+  <script src="js/jquery.min.js"></script>
+  <!-- 加载 Bootstrap 的所有 JavaScript 插件。你也可以根据需要只加载单个插件。 -->
+  <script src="js/bootstrap.min.js"></script>
+
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+
+    var socket
+    var uname
+
+    function createTpl(data, flag) {
+
+      var str = ` <div class="con-item">
+        <p>
+          <span class="label label-info">${flag ? '我' : data.username}</span>
+        </p>
+        <p>
+          <span class="alert alert-${flag ? 'warning' : 'success'}">${data.msg}</span>
+        </p>
+      </div>`;
+
+      return str
+    }
+
+
+    // 显示聊天
+    $('#show-btn').on('click', () => {
+      uname = $.trim($('#username').val())
+      if (uname == '') {
+        $('#name-null').attr("class", "alert-danger");
+        return
+      }
+      $('#login').hide()
+      $('#div-v').show()
+
+
+      // 建立连接
+      socket = io('ws://localhost:3000')
+
+      // 监听服务器端事件推送
+      socket.on('connect', data => {
+        // console.log('建立连接');
+        socket.emit('login', uname)
+      });
+
+      // 接受服务端消息
+      socket.on('msg', data => {
+
+        // console.log(data);
+
+        // 判断是否本人
+        var flag = data.username == uname
+        var tpl = createTpl(data, flag)
+        $('#chatcon').append(tpl)
+      })
+
+      socket.on('disconnect', () => {
+        console.log('断开连接');
+        socket.emit('count', -1)
+      })
+
+      // 房间人数
+      socket.on('count', (data) => {
+        // console.log('断开连接');
+        $('#count').html(`${data} 人`)
+      })
+    })
+
+    // 发送消息到服务端
+    $('#send-btn').on('click', () => {
+      socket.emit('reply', $('#message').val())
+      // $('#message').val('')
+      var showdiv = document.getElementById("contentX")
+
+      if (showdiv.scrollTop == 0) {
+        showdiv.scrollTop = 4;
+      } else {
+        showdiv.scrollTop = showdiv.scrollHeight;
+        showdiv.scrollIntoView({ block: "end" });
+      }
+    })
+
+  </script>
+</body>
+
+</html>

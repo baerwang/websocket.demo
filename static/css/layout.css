@@ -1,0 +1,26 @@
+#login{
+  display: block;
+}
+#contentX{
+  border:1px solid #ccc;
+  border-radius: 4px;
+}
+
+#div-v{
+  display: none;
+}
+
+#content{
+  height:320px;
+}
+#count{
+  color:red;
+  font-size:6px;
+}
+.alert{
+  padding: 5px;
+}
+
+.con-item{
+  margin: 10px 0 15px 0;
+}
