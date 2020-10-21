@@ -1,4 +1,4 @@
-# 下载包
+-- 下载包
 npm install
-# 运行
+-- 运行
 node main
