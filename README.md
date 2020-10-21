@@ -1,2 +1,4 @@
-npm install # 下载包
-node main   # 运行
+# 下载包
+npm install
+# 运行
+node main
